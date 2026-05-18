@@ -32,6 +32,11 @@
             border-radius: 8px;
             font-family: inherit;
         }
+        select:focus, textarea:focus, button:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
         textarea { height: 100px; resize: vertical; }
         button {
             background-color: #007bff;
@@ -65,6 +70,9 @@
             text-align: center; padding: 10px; background: #e3f2fd; border-radius: 6px;
         }
         .status-success { color: #28a745 !important; background: #d4edda !important; }
+        .status-warning { color: #e67e22 !important; background: #fff3cd !important; }
+        optgroup { font-weight: bold; color: #333; }
+        optgroup option { font-weight: normal; padding-left: 10px; }
     </style>
 </head>
 <body>
@@ -75,10 +83,51 @@
     <div class="chat-container">
         <label for="modelSelect">Choose a Model:</label>
         <select id="modelSelect">
-            <option value="claude-sonnet-4-6" selected>Claude Sonnet 4.6</option>
-            <option value="claude-opus-4-7">Claude Opus 4.7</option>
-            <option value="claude-opus-4.7-fast">Claude Opus 4.7 Fast</option>
-            <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
+            <!-- 🔵 CLAUDE MODELS -->
+            <optgroup label="Claude (Anthropic)">
+                <option value="claude-sonnet-4-6" selected>Claude Sonnet 4.6</option>
+                <option value="claude-opus-4-7">Claude Opus 4.7 (Most Powerful)</option>
+                <option value="claude-opus-4.7-fast">Claude Opus 4.7 Fast (2.5x Faster)</option>
+                <option value="claude-opus-4-6">Claude Opus 4.6</option>
+                <option value="claude-haiku-4-5">Claude Haiku 4.5 (Fastest)</option>
+                <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+            </optgroup>
+            
+            <!-- 🟢 OPENAI MODELS -->
+            <optgroup label="OpenAI">
+                <option value="openai/gpt-5-chat">GPT-5 Chat (Latest)</option>
+                <option value="openai/gpt-5.5">GPT-5.5 (Frontier)</option>
+                <option value="openai/gpt-5.4">GPT-5.4</option>
+                <option value="openai/gpt-5.4-mini">GPT-5.4 Mini (Fast)</option>
+                <option value="openai/gpt-5.2-chat">GPT-5.2 Chat</option>
+                <option value="openai/gpt-5-mini">GPT-5 Mini</option>
+                <option value="openai/gpt-4o">GPT-4o</option>
+                <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+            </optgroup>
+            
+            <!-- 🟡 GOOGLE MODELS -->
+            <optgroup label="Google">
+                <option value="google/gemma-4-31b-it">Gemma 4 31B (Best Google)</option>
+                <option value="google/gemma-4-26b-a4b-it">Gemma 4 26B A4B</option>
+            </optgroup>
+            
+            <!-- 🟢 FREE MODELS (No Cost) -->
+            <optgroup label="FREE Models">
+                <option value="inclusionai/ring-2.6-1t:free">Ring 2.6 1T (FREE - Trillion Params)</option>
+                <option value="qwen/qwen3.6-plus-preview:free">Qwen 3.6 Plus Preview (FREE)</option>
+                <option value="poolside/laguna-m.1:free">Laguna M.1 (FREE - Coding)</option>
+                <option value="poolside/laguna-xs.2:free">Laguna XS.2 (FREE - Lightweight)</option>
+                <option value="baidu/cobuddy:free">CoBuddy (FREE - Baidu)</option>
+            </optgroup>
+            
+            <!-- 🟣 OTHER POPULAR -->
+            <optgroup label="Other Models">
+                <option value="deepseek/deepseek-v4-pro">DeepSeek V4 Pro</option>
+                <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash (Fast)</option>
+                <option value="qwen/qwen3.6-plus">Qwen 3.6 Plus</option>
+                <option value="mistralai/mistral-medium-3-5">Mistral Medium 3.5</option>
+                <option value="x-ai/grok-4.3">Grok 4.3 (xAI)</option>
+            </optgroup>
         </select>
 
         <label for="promptInput">Your Message:</label>
@@ -110,10 +159,11 @@
 
         function unlockInterface(success) {
             if (success) {
-                statusDiv.innerHTML = '✅ <strong>Puter Engine Active!</strong> - Claude API Ready';
+                statusDiv.innerHTML = '✅ <strong>Puter Engine Active!</strong> - AI API Ready (Claude, OpenAI, Google & More)';
                 statusDiv.className = 'status-success';
             } else {
                 statusDiv.innerHTML = '⚠️ <strong>Local Mode</strong> - Trying anyway...';
+                statusDiv.className = 'status-warning';
             }
             btn.disabled = false;
             clearBtn.style.display = 'block';
@@ -162,7 +212,6 @@
             btn.innerText = '⏳ Thinking...';
             btn.disabled = true;
 
-            // Add AI placeholder
             const aiDiv = document.createElement('div');
             aiDiv.className = 'message ai-message';
             aiDiv.innerHTML = '<div class="message-label">🤖 AI</div><div class="response">⏳ Thinking...</div>';
@@ -171,12 +220,8 @@
             const responseDiv = aiDiv.querySelector('.response');
 
             try {
-                // ✅ FIXED: Use NON-streaming (simpler, works perfectly) [web:21]
                 const response = await puter.ai.chat(prompt, { model: selectedModel });
-                
-                // ✅ FIXED: response is a STRING directly, not an object! [web:21]
                 responseDiv.textContent = response;
-                
             } catch (error) {
                 responseDiv.textContent = '❌ Error: ' + error.message;
             } finally {
