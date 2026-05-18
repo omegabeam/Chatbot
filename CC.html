@@ -1,332 +1,488 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Personal AI Chat</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            padding: 20px;
-            max-width: 800px;
-            margin: auto;
-            background-color: #f9f9f9;
-            line-height: 1.6;
-        }
-        h2 { color: #333; text-align: center; margin-bottom: 20px; }
-        .chat-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        label { font-weight: 600; margin-top: 15px; display: block; color: #444; }
-        select, textarea, button {
-            width: 100%;
-            margin-top: 8px;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-family: inherit;
-        }
-        textarea { height: 100px; resize: vertical; }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #a0cfff; cursor: not-allowed; }
-        #chatHistory {
-            background: #fafafa;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            min-height: 300px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .message {
-            margin-bottom: 15px;
-            padding: 12px 16px;
-            border-radius: 8px;
-        }
-        .user-message { background: #e3f2fd; border-left: 4px solid #007bff; margin-left: 20px; }
-        .ai-message { background: #f0f0f0; border-left: 4px solid #28a745; margin-right: 20px; }
-        .message-label { font-weight: 600; font-size: 12px; margin-bottom: 6px; color: #666; }
-        .response { white-space: pre-wrap; }
-        #status {
-            font-size: 14px; color: #007bff; margin-bottom: 15px; font-weight: 600;
-            text-align: center; padding: 10px; background: #e3f2fd; border-radius: 6px;
-        }
-        .status-success { color: #28a745 !important; background: #d4edda !important; }
-        .status-warning { color: #e67e22 !important; background: #fff3cd !important; }
-        .model-info {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            font-style: italic;
-        }
-        .auth-row {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-        .auth-btn {
-            background: #28a745;
-        }
-        .auth-btn:hover {
-            background: #1f7f36;
-        }
-        .auth-btn:disabled {
-            background: #89c79a;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Personal AI Chat</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #151922;
+      --panel-2: #10141b;
+      --border: #262b36;
+      --text: #e7ebf3;
+      --muted: #99a3b3;
+      --blue: #6ba7ff;
+      --blue-2: #9bc0ff;
+      --green: #2ecc71;
+      --yellow: #f1c40f;
+      --red: #ff6b6b;
+      --shadow: 0 12px 30px rgba(0,0,0,.28);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(107,167,255,.12), transparent 30%),
+        linear-gradient(180deg, #0c0f14, #11151c 38%, #0f1115);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    .app {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 8px 0 18px;
+      font-size: 1.45rem;
+      letter-spacing: .2px;
+    }
+
+    .chat-container {
+      background: rgba(21,25,34,.94);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .model-info {
+      display: inline-block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+
+    select, textarea, button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #1b2030;
+      color: var(--text);
+      font: inherit;
+      padding: 12px;
+      outline: none;
+    }
+
+    select:focus, textarea:focus, button:focus {
+      border-color: rgba(107,167,255,.8);
+      box-shadow: 0 0 0 3px rgba(107,167,255,.15);
+    }
+
+    textarea {
+      min-height: 104px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .08s ease, background .2s ease, opacity .2s ease;
+      background: linear-gradient(180deg, #6ba7ff, #4c86ff);
+      border: none;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .auth-row {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .auth-btn {
+      background: linear-gradient(180deg, #2ecc71, #239b56);
+    }
+
+    .auth-btn.secondary {
+      background: linear-gradient(180deg, #697387, #545e72);
+    }
+
+    #status {
+      margin-bottom: 16px;
+      text-align: center;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #121722;
+      color: var(--blue-2);
+      font-weight: 600;
+    }
+
+    .status-success {
+      color: #9dffbd !important;
+      background: rgba(46, 204, 113, .12) !important;
+      border-color: rgba(46, 204, 113, .35) !important;
+    }
+
+    .status-warning {
+      color: #ffe08a !important;
+      background: rgba(241, 196, 15, .12) !important;
+      border-color: rgba(241, 196, 15, .35) !important;
+    }
+
+    #chatHistory {
+      min-height: 320px;
+      max-height: 560px;
+      overflow-y: auto;
+      background: linear-gradient(180deg, #11151d, #0f131a);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .message {
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .user-message {
+      background: linear-gradient(180deg, rgba(107,167,255,.18), rgba(107,167,255,.11));
+      margin-left: 24px;
+      border-left: 4px solid #6ba7ff;
+    }
+
+    .ai-message {
+      background: linear-gradient(180deg, rgba(46,204,113,.09), rgba(255,255,255,.03));
+      margin-right: 24px;
+      border-left: 4px solid #2ecc71;
+    }
+
+    .message-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: .2px;
+    }
+
+    .response {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .response pre {
+      margin: 12px 0;
+      padding: 14px;
+      border-radius: 12px;
+      overflow: auto;
+      background: #0b1020;
+      border: 1px solid #26314a;
+    }
+
+    .response code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .95em;
+    }
+
+    .response p { margin: 0 0 10px; }
+    .response p:last-child { margin-bottom: 0; }
+    .response ul, .response ol { margin: 8px 0 10px 22px; }
+    .response a { color: var(--blue-2); }
+
+    optgroup { font-weight: 700; color: #d6def0; }
+    optgroup option { color: #e9eef8; }
+
+    .footer-note {
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .chat-container { padding: 14px; }
+      .user-message, .ai-message { margin-left: 0; margin-right: 0; }
+      h2 { font-size: 1.2rem; }
+    }
+  </style>
 </head>
 <body>
-
+  <div class="app">
     <h2>🤖 My Personal AI Chat</h2>
     <div id="status">⏳ Initializing Connection...</div>
 
     <div class="chat-container">
-        <div class="auth-row">
-            <button id="loginBtn" class="auth-btn">🔐 Login to Puter</button>
-            <button id="logoutBtn" style="background:#6c757d;">Logout</button>
-        </div>
+      <div class="auth-row">
+        <button id="loginBtn" class="auth-btn">🔐 Login to Puter</button>
+        <button id="logoutBtn" class="secondary">Logout</button>
+      </div>
 
-        <label for="modelSelect">Choose a Model:</label>
-        <span class="model-info">💡 Tip: Claude Opus 4.7 Fast and GPT-5.5 work best!</span>
-        <select id="modelSelect">
-            <optgroup label="Claude (Anthropic)">
-                <option value="claude-opus-4.7-fast" selected>Claude Opus 4.7 Fast ⭐ WORKS BEST</option>
-                <option value="claude-opus-4-7">Claude Opus 4.7 (Most Powerful)</option>
-                <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
-                <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
-                <option value="claude-haiku-4-5">Claude Haiku 4.5 (Fastest)</option>
-                <option value="claude-opus-4-6">Claude Opus 4.6</option>
-            </optgroup>
+      <label for="modelSelect">Choose a Model:</label>
+      <span class="model-info">💡 Tip: Claude Opus 4.7 Fast and GPT-5.5 work best!</span>
 
-            <optgroup label="OpenAI GPT-5 (Latest)">
-                <option value="openai/gpt-5.5">GPT-5.5 ⭐ Frontier</option>
-                <option value="openai/gpt-5.5-pro">GPT-5.5 Pro</option>
-                <option value="openai/gpt-5.5-chat">GPT-5 Chat (Latest)</option>
-                <option value="openai/gpt-5.4">GPT-5.4</option>
-                <option value="openai/gpt-5.4-mini">GPT-5.4 Mini</option>
-                <option value="openai/gpt-5-mini">GPT-5 Mini</option>
-                <option value="openai/gpt-5.4-nano">GPT-5.4 Nano (Fastest)</option>
-            </optgroup>
+      <select id="modelSelect">
+        <optgroup label="Claude (Anthropic)">
+          <option value="claude-opus-4.7-fast" selected>Claude Opus 4.7 Fast ⭐ WORKS BEST</option>
+          <option value="claude-opus-4-7">Claude Opus 4.7 (Most Powerful)</option>
+          <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+          <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5 (Fastest)</option>
+          <option value="claude-opus-4-6">Claude Opus 4.6</option>
+        </optgroup>
 
-            <optgroup label="OpenAI GPT-4 (Stable)">
-                <option value="gpt-4o">GPT-4o ⭐ Recommended</option>
-                <option value="gpt-4o-mini">GPT-4o Mini</option>
-                <option value="gpt-4.1">GPT-4.1</option>
-                <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
-                <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
-            </optgroup>
+        <optgroup label="OpenAI GPT-5 (Latest)">
+          <option value="openai/gpt-5.5">GPT-5.5 ⭐ Frontier</option>
+          <option value="openai/gpt-5.5-pro">GPT-5.5 Pro</option>
+          <option value="openai/gpt-5.5-chat">GPT-5 Chat (Latest)</option>
+          <option value="openai/gpt-5.4">GPT-5.4</option>
+          <option value="openai/gpt-5.4-mini">GPT-5.4 Mini</option>
+          <option value="openai/gpt-5-mini">GPT-5 Mini</option>
+          <option value="openai/gpt-5.4-nano">GPT-5.4 Nano (Fastest)</option>
+        </optgroup>
 
-            <optgroup label="Google (Working)">
-                <option value="gemini-2.5-flash-preview">Gemini 2.5 Flash ⭐ Free</option>
-                <option value="gemini-2.5-pro-preview">Gemini 2.5 Pro</option>
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                <option value="gemini-2.0-flash-lite-preview-02-05">Gemini 2.0 Flash Lite</option>
-            </optgroup>
+        <optgroup label="OpenAI GPT-4 (Stable)">
+          <option value="gpt-4o">GPT-4o ⭐ Recommended</option>
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
+          <option value="gpt-4.1">GPT-4.1</option>
+          <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+          <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
+        </optgroup>
 
-            <optgroup label="FREE Models">
-                <option value="inclusionai/ring-2.6-1t:free">Ring 2.6 1T (FREE - Trillion)</option>
-                <option value="qwen/qwen3.6-plus-preview:free">Qwen 3.6 Plus Preview (FREE)</option>
-                <option value="poolside/laguna-m.1:free">Laguna M.1 (FREE - Coding)</option>
-                <option value="poolside/laguna-xs.2:free">Laguna XS.2 (FREE - Light)</option>
-                <option value="google/gemma-3n-e2b-it:free">Gemma 3n 2B (FREE - Mobile)</option>
-            </optgroup>
+        <optgroup label="Google (Working)">
+          <option value="gemini-2.5-flash-preview">Gemini 2.5 Flash ⭐ Free</option>
+          <option value="gemini-2.5-pro-preview">Gemini 2.5 Pro</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          <option value="gemini-2.0-flash-lite-preview-02-05">Gemini 2.0 Flash Lite</option>
+        </optgroup>
 
-            <optgroup label="Other Working Models">
-                <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
-                <option value="deepseek/deepseek-coder">DeepSeek Coder</option>
-                <option value="qwen/qwen-plus">Qwen Plus</option>
-                <option value="qwen/qwen-flash">Qwen Flash</option>
-                <option value="mistralai/mistral-medium-3.5">Mistral Medium 3.5</option>
-                <option value="moonshotai/kimi-k2">Kimi K2</option>
-            </optgroup>
-        </select>
+        <optgroup label="FREE Models">
+          <option value="inclusionai/ring-2.6-1t:free">Ring 2.6 1T (FREE - Trillion)</option>
+          <option value="qwen/qwen3.6-plus-preview:free">Qwen 3.6 Plus Preview (FREE)</option>
+          <option value="poolside/laguna-m.1:free">Laguna M.1 (FREE - Coding)</option>
+          <option value="poolside/laguna-xs.2:free">Laguna XS.2 (FREE - Light)</option>
+          <option value="google/gemma-3n-e2b-it:free">Gemma 3n 2B (FREE - Mobile)</option>
+        </optgroup>
 
-        <label for="promptInput">Your Message:</label>
-        <textarea id="promptInput" placeholder="Type your message... (Ctrl/Cmd+Enter to send)"></textarea>
+        <optgroup label="Other Working Models">
+          <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
+          <option value="deepseek/deepseek-coder">DeepSeek Coder</option>
+          <option value="qwen/qwen-plus">Qwen Plus</option>
+          <option value="qwen/qwen-flash">Qwen Flash</option>
+          <option value="mistralai/mistral-medium-3.5">Mistral Medium 3.5</option>
+          <option value="moonshotai/kimi-k2">Kimi K2</option>
+        </optgroup>
+      </select>
 
-        <button id="sendBtn" disabled>Connecting...</button>
-        <button id="clearBtn" style="background-color: #dc3545; display: none;">Clear Chat</button>
+      <label for="promptInput">Your Message:</label>
+      <textarea id="promptInput" placeholder="Type your message... (Ctrl/Cmd+Enter to send)"></textarea>
+
+      <button id="sendBtn" disabled>Connecting...</button>
+      <button id="clearBtn" style="background-color: #dc3545; display: none;">Clear Chat</button>
+      <div class="footer-note">If login does not open, allow popups for this site and try again.</div>
     </div>
 
     <div class="chat-container">
-        <label>Chat History:</label>
-        <div id="chatHistory">
-            <div style="color: #666; text-align: center; padding: 40px;">
-                🔹 Your conversation will appear here<br>
-                <small style="color: #999;">Login, choose a model, and send your first message</small>
-            </div>
+      <label>Chat History:</label>
+      <div id="chatHistory">
+        <div style="color: #98a2b3; text-align: center; padding: 44px 12px;">
+          🔹 Your conversation will appear here<br>
+          <small>Login, choose a model, and send your first message</small>
         </div>
+      </div>
     </div>
+  </div>
 
-    <script src="https://js.puter.com/v2/"></script>
-    <script>
-        const btn = document.getElementById('sendBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const chatHistory = document.getElementById('chatHistory');
-        const statusDiv = document.getElementById('status');
-        const promptInput = document.getElementById('promptInput');
-        const modelSelect = document.getElementById('modelSelect');
+  <script src="https://js.puter.com/v2/"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.12/marked.min.js"></script>
 
-        let isInitialized = false;
+  <script>
+    const btn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const chatHistory = document.getElementById('chatHistory');
+    const statusDiv = document.getElementById('status');
+    const promptInput = document.getElementById('promptInput');
+    const modelSelect = document.getElementById('modelSelect');
 
-        function setStatus(text, cls) {
-            statusDiv.innerHTML = text;
-            statusDiv.className = cls || '';
+    marked.setOptions({ breaks: true, gfm: true });
+
+    function setStatus(text, cls) {
+      statusDiv.innerHTML = text;
+      statusDiv.className = cls || '';
+    }
+
+    function unlockInterface() {
+      btn.disabled = false;
+      clearBtn.style.display = 'block';
+    }
+
+    function lockInterface() {
+      btn.disabled = true;
+      clearBtn.style.display = 'none';
+    }
+
+    async function checkSignedIn() {
+      try {
+        if (typeof puter === 'undefined' || !puter.auth || !puter.auth.isSignedIn) return false;
+        return await puter.auth.isSignedIn();
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function syncAuthState() {
+      const signedIn = await checkSignedIn();
+      if (signedIn) {
+        setStatus('✅ <strong>Puter Engine Active!</strong> - Authenticated and ready', 'status-success');
+        unlockInterface();
+        loginBtn.textContent = '✅ Logged in to Puter';
+        loginBtn.disabled = true;
+      } else {
+        setStatus('⚠️ <strong>Not signed in</strong> - Tap login to authenticate', 'status-warning');
+        lockInterface();
+        loginBtn.textContent = '🔐 Login to Puter';
+        loginBtn.disabled = false;
+      }
+    }
+
+    loginBtn.addEventListener('click', async () => {
+      loginBtn.disabled = true;
+      loginBtn.textContent = '⏳ Opening Puter login...';
+      try {
+        await puter.auth.signIn({ attempt_temp_user_creation: true });
+        await syncAuthState();
+      } catch (error) {
+        console.error(error);
+        setStatus('⚠️ <strong>Login failed</strong> - allow popups and try again', 'status-warning');
+        loginBtn.textContent = '🔐 Login to Puter';
+        loginBtn.disabled = false;
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        if (puter?.auth?.signOut) await puter.auth.signOut();
+      } catch (e) {}
+      await syncAuthState();
+    });
+
+    promptInput.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btn.disabled) sendMessage();
+    });
+
+    btn.addEventListener('click', sendMessage);
+
+    clearBtn.addEventListener('click', () => {
+      chatHistory.innerHTML = '<div style="color: #98a2b3; text-align: center; padding: 44px 12px;">🔹 Your conversation will appear here<br><small>Login, choose a model, and send your first message</small></div>';
+      promptInput.value = '';
+      promptInput.focus();
+    });
+
+    function renderAssistantText(text) {
+      return marked.parse(String(text || ''));
+    }
+
+    function enhanceCodeBlocks(root) {
+      root.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightElement(block);
+      });
+    }
+
+    function addMessage(text, isUser) {
+      if (chatHistory.children.length === 1 && chatHistory.children[0].textContent.includes('conversation')) {
+        chatHistory.innerHTML = '';
+      }
+      const div = document.createElement('div');
+      div.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
+      div.innerHTML = `<div class="message-label">${isUser ? '👤 You' : '🤖 AI'}</div>`;
+      const content = document.createElement('div');
+      content.className = 'response';
+      if (isUser) content.textContent = text;
+      else content.innerHTML = renderAssistantText(text);
+      div.appendChild(content);
+      chatHistory.appendChild(div);
+      if (!isUser) enhanceCodeBlocks(div);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+      return content;
+    }
+
+    async function sendMessage() {
+      const prompt = promptInput.value.trim();
+      const selectedModel = modelSelect.value;
+
+      if (!prompt) return alert('Please type a message!');
+      if (!(await checkSignedIn())) return alert('Please login to Puter first!');
+
+      addMessage(prompt, true);
+      promptInput.value = '';
+      promptInput.disabled = true;
+      btn.innerText = '⏳ Thinking...';
+      btn.disabled = true;
+
+      const responseDiv = addMessage('⏳ Thinking...', false);
+
+      try {
+        const response = await puter.ai.chat(prompt, { model: selectedModel });
+        let text = '';
+
+        if (typeof response === 'string') {
+          text = response;
+        } else if (response?.message?.content) {
+          if (Array.isArray(response.message.content)) {
+            text = response.message.content.map(x => x?.text || x?.content || '').join('');
+          } else {
+            text = response.message.content;
+          }
+        } else {
+          text = JSON.stringify(response, null, 2);
         }
 
-        function unlockInterface() {
-            btn.disabled = false;
-            clearBtn.style.display = 'block';
-            isInitialized = true;
-        }
+        responseDiv.innerHTML = renderAssistantText(text);
+        enhanceCodeBlocks(responseDiv);
+      } catch (error) {
+        console.error('Chat error:', error);
+        responseDiv.textContent = '❌ Error: ' + (error.message || error.toString());
+      } finally {
+        promptInput.disabled = false;
+        btn.innerText = '🚀 Send Message';
+        btn.disabled = false;
+        promptInput.focus();
+      }
+    }
 
-        function lockInterface() {
-            btn.disabled = true;
-            clearBtn.style.display = 'none';
-            isInitialized = false;
-        }
-
-        async function checkSignedIn() {
-            try {
-                if (typeof puter === 'undefined' || !puter.auth) return false;
-                return await puter.auth.isSignedIn();
-            } catch (e) {
-                return false;
-            }
-        }
-
-        async function syncAuthState() {
-            const signedIn = await checkSignedIn();
-            if (signedIn) {
-                setStatus('✅ <strong>Puter Engine Active!</strong> - Authenticated and ready', 'status-success');
-                unlockInterface();
-                loginBtn.textContent = '✅ Logged in to Puter';
-                loginBtn.disabled = true;
-            } else {
-                setStatus('⚠️ <strong>Not signed in</strong> - Tap login to authenticate', 'status-warning');
-                lockInterface();
-                loginBtn.textContent = '🔐 Login to Puter';
-                loginBtn.disabled = false;
-            }
-        }
-
-        loginBtn.addEventListener('click', async () => {
-            loginBtn.disabled = true;
-            loginBtn.textContent = '⏳ Opening Puter login...';
-            try {
-                await puter.auth.signIn({ attempt_temp_user_creation: true });
-                await syncAuthState();
-            } catch (error) {
-                console.error(error);
-                setStatus('⚠️ <strong>Login failed</strong> - allow popups and try again', 'status-warning');
-                loginBtn.textContent = '🔐 Login to Puter';
-                loginBtn.disabled = false;
-            }
-        });
-
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                if (puter?.auth?.signOut) {
-                    await puter.auth.signOut();
-                }
-            } catch (e) {}
-            await syncAuthState();
-        });
-
-        promptInput.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btn.disabled) sendMessage();
-        });
-
-        btn.addEventListener('click', sendMessage);
-
-        clearBtn.addEventListener('click', () => {
-            chatHistory.innerHTML = '<div style="color: #666; text-align: center; padding: 40px;">🔹 Your conversation will appear here<br><small style="color: #999;">Login, choose a model, and send your first message</small></div>';
-            promptInput.value = '';
-            promptInput.focus();
-        });
-
-        function addMessage(text, isUser) {
-            if (chatHistory.children.length === 1 && chatHistory.children[0].textContent.includes('conversation')) {
-                chatHistory.innerHTML = '';
-            }
-            const div = document.createElement('div');
-            div.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
-            div.innerHTML = `<div class="message-label">${isUser ? '👤 You' : '🤖 AI'}</div><div class="response"></div>`;
-            div.querySelector('.response').textContent = text;
-            chatHistory.appendChild(div);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const prompt = promptInput.value.trim();
-            const selectedModel = modelSelect.value;
-
-            if (!prompt) return alert('Please type a message!');
-            if (!(await checkSignedIn())) return alert('Please login to Puter first!');
-
-            addMessage(prompt, true);
-            promptInput.value = '';
-            promptInput.disabled = true;
-            btn.innerText = '⏳ Thinking...';
-            btn.disabled = true;
-
-            const aiDiv = document.createElement('div');
-            aiDiv.className = 'message ai-message';
-            aiDiv.innerHTML = '<div class="message-label">🤖 AI</div><div class="response">⏳ Thinking...</div>';
-            chatHistory.appendChild(aiDiv);
-            chatHistory.scrollTop = chatHistory.scrollHeight;
-            const responseDiv = aiDiv.querySelector('.response');
-
-            try {
-                const response = await puter.ai.chat(prompt, { model: selectedModel });
-                let text = '';
-                if (typeof response === 'string') {
-                    text = response;
-                } else if (response?.message?.content) {
-                    if (Array.isArray(response.message.content)) {
-                        text = response.message.content.map(x => x?.text || x?.content || '').join('');
-                    } else {
-                        text = response.message.content;
-                    }
-                } else {
-                    text = JSON.stringify(response, null, 2);
-                }
-                responseDiv.textContent = text;
-            } catch (error) {
-                console.error('Chat error:', error);
-                responseDiv.textContent = '❌ Error: ' + (error.message || error.toString());
-            } finally {
-                promptInput.disabled = false;
-                btn.innerText = '🚀 Send Message';
-                btn.disabled = false;
-                promptInput.focus();
-            }
-        }
-
-        window.addEventListener('load', async () => {
-            promptInput.focus();
-            if (typeof puter === 'undefined') {
-                setStatus('⚠️ <strong>Puter script not loaded</strong> - check internet or refresh', 'status-warning');
-                return;
-            }
-            await syncAuthState();
-        });
-    </script>
+    window.addEventListener('load', async () => {
+      promptInput.focus();
+      if (typeof puter === 'undefined') {
+        setStatus('⚠️ <strong>Puter script not loaded</strong> - check internet or refresh', 'status-warning');
+        return;
+      }
+      await syncAuthState();
+    });
+  </script>
 </body>
 </html>
