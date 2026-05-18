@@ -193,17 +193,55 @@
     }
 
     .response pre {
+      position: relative;
       margin: 12px 0;
-      padding: 14px;
+      padding: 34px 14px 14px;
       border-radius: 12px;
       overflow: auto;
       background: #0b1020;
       border: 1px solid #26314a;
     }
 
-    .response code {
+    .response pre code {
+      display: block;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: .95em;
+    }
+
+    .code-toolbar {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      z-index: 2;
+    }
+
+    .code-lang-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(107,167,255,.16);
+      border: 1px solid rgba(107,167,255,.28);
+      color: #cfe1ff;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .code-copy-btn {
+      border: 1px solid #3a4663;
+      background: #151b2e;
+      color: #e7ebf3;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .code-copy-btn:hover {
+      background: #1c243d;
     }
 
     .response p { margin: 0 0 10px; }
@@ -413,6 +451,73 @@
       });
     }
 
+    function getLanguageNameFromCode(codeEl) {
+      const cls = Array.from(codeEl.classList);
+      const langClass = cls.find(c => c.startsWith('language-') || c.startsWith('lang-'));
+      if (!langClass) return 'text';
+
+      let lang = langClass.replace(/^language-/, '').replace(/^lang-/, '');
+      if (!lang) return 'text';
+
+      const map = {
+        js: 'javascript',
+        ts: 'typescript',
+        py: 'python',
+        html: 'html',
+        css: 'css',
+        sh: 'bash',
+        shell: 'bash',
+        yml: 'yaml',
+        md: 'markdown',
+        json: 'json',
+        jsx: 'jsx',
+        tsx: 'tsx',
+        csharp: 'csharp',
+        cs: 'csharp',
+        cpp: 'cpp',
+        c: 'c',
+        txt: 'text'
+      };
+
+      return map[lang.toLowerCase()] || lang.toLowerCase();
+    }
+
+    function addCodeToolbar(root) {
+      root.querySelectorAll('pre').forEach(pre => {
+        if (pre.querySelector('.code-toolbar')) return;
+
+        const code = pre.querySelector('code');
+        if (!code) return;
+
+        const toolbar = document.createElement('div');
+        toolbar.className = 'code-toolbar';
+
+        const badge = document.createElement('span');
+        badge.className = 'code-lang-badge';
+        badge.textContent = getLanguageNameFromCode(code);
+
+        const btn = document.createElement('button');
+        btn.className = 'code-copy-btn';
+        btn.type = 'button';
+        btn.textContent = 'Copy';
+
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(code.innerText);
+            btn.textContent = 'Copied';
+            setTimeout(() => btn.textContent = 'Copy', 1200);
+          } catch (e) {
+            btn.textContent = 'Failed';
+            setTimeout(() => btn.textContent = 'Copy', 1200);
+          }
+        });
+
+        toolbar.appendChild(badge);
+        toolbar.appendChild(btn);
+        pre.insertBefore(toolbar, pre.firstChild);
+      });
+    }
+
     function addMessage(text, isUser) {
       if (chatHistory.children.length === 1 && chatHistory.children[0].textContent.includes('conversation')) {
         chatHistory.innerHTML = '';
@@ -426,7 +531,10 @@
       else content.innerHTML = renderAssistantText(text);
       div.appendChild(content);
       chatHistory.appendChild(div);
-      if (!isUser) enhanceCodeBlocks(div);
+      if (!isUser) {
+        enhanceCodeBlocks(div);
+        addCodeToolbar(div);
+      }
       chatHistory.scrollTop = chatHistory.scrollHeight;
       return content;
     }
@@ -464,6 +572,7 @@
 
         responseDiv.innerHTML = renderAssistantText(text);
         enhanceCodeBlocks(responseDiv);
+        addCodeToolbar(responseDiv);
       } catch (error) {
         console.error('Chat error:', error);
         responseDiv.textContent = '❌ Error: ' + (error.message || error.toString());
