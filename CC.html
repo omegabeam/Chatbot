@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal AI Chat</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            max-width: 100%;
+            margin: auto;
+            background-color: #f9f9f9;
+        }
+        h2 { color: #333; }
+        label { font-weight: bold; margin-top: 10px; display: block; }
+        select, textarea, button {
+            width: 100%;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        textarea { height: 120px; resize: vertical; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:active { background-color: #0056b3; }
+        button:disabled {
+            background-color: #7ab3f5;
+            cursor: not-allowed;
+        }
+        #output {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            min-height: 80px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        #status {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🤖 My AI Chat</h2>
+    <div id="status">⏳ Loading Puter...</div>
+
+    <label for="modelSelect">Choose a Model:</label>
+    <select id="modelSelect" disabled>
+        <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+        <option value="claude-opus-4-6">Claude Opus 4.6 (Most Powerful)</option>
+        <option value="claude-haiku-4-5">Claude Haiku 4.5 (Fastest)</option>
+        <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+    </select>
+
+    <label for="promptInput">Your Question:</label>
+    <textarea id="promptInput" placeholder="Type your prompt here..." disabled></textarea>
+
+    <button id="sendBtn" disabled>Loading...</button>
+
+    <label>Response:</label>
+    <div id="output">Waiting for Puter to load...</div>
+
+    <!-- ✅ FIX 1: Move Puter script to END of body, after the HTML exists -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        const btn = document.getElementById('sendBtn');
+        const outputDiv = document.getElementById('output');
+        const statusDiv = document.getElementById('status');
+        const promptInput = document.getElementById('promptInput');
+        const modelSelect = document.getElementById('modelSelect');
+
+        // ✅ FIX 2: Use puter.ready() so code only runs after Puter is fully loaded
+        puter.ready(() => {
+            statusDiv.innerText = '✅ Puter ready!';
+            btn.innerText = 'Send to AI';
+            btn.disabled = false;
+            promptInput.disabled = false;
+            modelSelect.disabled = false;
+            outputDiv.innerText = 'Ready for your question...';
+        });
+
+        // Ctrl+Enter to send
+        promptInput.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                askAI();
+            }
+        });
+
+        btn.addEventListener('click', askAI);
+
+        function askAI() {
+            const prompt = promptInput.value;
+            const model = modelSelect.value;
+
+            if (!prompt.trim()) {
+                outputDiv.innerText = 'Please type a question first!';
+                return;
+            }
+
+            outputDiv.innerText = 'Thinking...';
+            btn.innerText = 'Wait...';
+            btn.disabled = true;
+
+            puter.ai.chat(prompt, { model: model })
+            .then(response => {
+                if (response?.message?.content?.[0]?.text) {
+                    outputDiv.innerText = response.message.content[0].text;
+                } else if (typeof response === 'string') {
+                    outputDiv.innerText = response;
+                } else {
+                    outputDiv.innerText = JSON.stringify(response, null, 2);
+                }
+            })
+            .catch(error => {
+                outputDiv.innerText = '❌ Error: ' + (error.message || JSON.stringify(error));
+            })
+            .finally(() => {
+                btn.innerText = 'Send to AI';
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
