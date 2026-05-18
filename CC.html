@@ -37,6 +37,11 @@
             background-color: #7ab3f5;
             cursor: not-allowed;
         }
+        #loginBtn {
+            background-color: #28a745;
+            display: none; /* Hidden by default, shown if needed */
+        }
+        #loginBtn:active { background-color: #1e7e34; }
         #output {
             background: #fff;
             padding: 15px;
@@ -51,49 +56,78 @@
             font-size: 13px;
             color: #888;
             margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .chat-container {
+            display: none; /* Hidden until authenticated */
         }
     </style>
 </head>
 <body>
     <h2>🤖 My AI Chat</h2>
-    <div id="status">⏳ Loading Puter...</div>
+    <div id="status">⏳ Initializing Puter...</div>
 
-    <label for="modelSelect">Choose a Model:</label>
-    <select id="modelSelect" disabled>
-        <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
-        <option value="claude-opus-4-6">Claude Opus 4.6 (Most Powerful)</option>
-        <option value="claude-haiku-4-5">Claude Haiku 4.5 (Fastest)</option>
-        <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
-    </select>
+    <button id="loginBtn">🔒 Sign In with Puter Account</button>
 
-    <label for="promptInput">Your Question:</label>
-    <textarea id="promptInput" placeholder="Type your prompt here..." disabled></textarea>
+    <div id="chatInterface" class="chat-container">
+        <label for="modelSelect">Choose a Model:</label>
+        <select id="modelSelect">
+            <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+            <option value="claude-opus-4-6">Claude Opus 4.6 (Most Powerful)</option>
+            <option value="claude-haiku-4-5">Claude Haiku 4.5 (Fastest)</option>
+            <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+        </select>
 
-    <button id="sendBtn" disabled>Loading...</button>
+        <label for="promptInput">Your Question:</label>
+        <textarea id="promptInput" placeholder="Type your prompt here..."></textarea>
 
-    <label>Response:</label>
-    <div id="output">Waiting for Puter to load...</div>
+        <button id="sendBtn">Send to AI</button>
 
-    <!-- ✅ FIX 1: Move Puter script to END of body, after the HTML exists -->
+        <label>Response:</label>
+        <div id="output">Ready for your question...</div>
+    </div>
+
     <script src="https://js.puter.com/v2/"></script>
     <script>
+        const loginBtn = document.getElementById('loginBtn');
+        const chatInterface = document.getElementById('chatInterface');
         const btn = document.getElementById('sendBtn');
         const outputDiv = document.getElementById('output');
         const statusDiv = document.getElementById('status');
         const promptInput = document.getElementById('promptInput');
         const modelSelect = document.getElementById('modelSelect');
 
-        // ✅ FIX 2: Use puter.ready() so code only runs after Puter is fully loaded
-        puter.ready(() => {
-            statusDiv.innerText = '✅ Puter ready!';
-            btn.innerText = 'Send to AI';
-            btn.disabled = false;
-            promptInput.disabled = false;
-            modelSelect.disabled = false;
-            outputDiv.innerText = 'Ready for your question...';
+        // Check authentication state right after script loads
+        function checkAuth() {
+            if (puter.auth.isSignedIn()) {
+                statusDiv.innerText = '✅ Puter Authenticated & Ready!';
+                statusDiv.style.color = '#28a745';
+                loginBtn.style.display = 'none';
+                chatInterface.style.display = 'block';
+            } else {
+                statusDiv.innerText = '⚠️ Action Required: Please sign in to unlock free API access.';
+                statusDiv.style.color = '#dc3545';
+                loginBtn.style.display = 'block';
+                chatInterface.style.display = 'none';
+            }
+        }
+
+        // Run checking instantly
+        checkAuth();
+
+        // Manual Login Click Handler (Bypasses popup blocker because it's a direct click)
+        loginBtn.addEventListener('click', async () => {
+            statusDiv.innerText = '⏳ Opening Login Window...';
+            try {
+                await puter.auth.signIn();
+                checkAuth(); // Re-evaluate UI elements on success
+            } catch (err) {
+                statusDiv.innerText = '❌ Sign-in failed. Ensure popups are allowed for this site.';
+                console.error(err);
+            }
         });
 
-        // Ctrl+Enter to send
+        // Ctrl+Enter shortcut execution
         promptInput.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 askAI();
