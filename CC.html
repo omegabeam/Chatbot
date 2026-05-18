@@ -221,7 +221,18 @@
 
             try {
                 const response = await puter.ai.chat(prompt, { model: selectedModel });
-                responseDiv.textContent = response;
+                
+                // ✅ FIXED: Handle both string and ChatResponse object formats [web:39]
+                let text;
+                if (typeof response === 'string') {
+                    text = response;
+                } else if (response?.message?.content) {
+                    text = response.message.content;  // ChatResponse object [web:39]
+                } else {
+                    text = JSON.stringify(response, null, 2);
+                }
+                responseDiv.textContent = text;
+                
             } catch (error) {
                 responseDiv.textContent = '❌ Error: ' + error.message;
             } finally {
