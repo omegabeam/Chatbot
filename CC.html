@@ -86,7 +86,7 @@
 <body>
 
     <h2>🤖 My Personal AI Chat</h2>
-    <div id="status">⏳ Initializing Connection...</div>
+    <div id="status">✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI, Google & More)</div>
 
     <div class="chat-container">
         <label for="modelSelect">Choose a Model:</label>
@@ -142,8 +142,8 @@
         <label for="promptInput">Your Message:</label>
         <textarea id="promptInput" placeholder="Type your message... (Ctrl/Cmd+Enter to send)"></textarea>
 
-        <button id="sendBtn" disabled>Connecting...</button>
-        <button id="clearBtn" style="background-color: #dc3545; display: none;">Clear Chat</button>
+        <button id="sendBtn">🚀 Send Message</button>
+        <button id="clearBtn" style="background-color: #dc3545;">Clear Chat</button>
     </div>
 
     <div class="chat-container">
@@ -158,40 +158,38 @@
 
     <script src="https://js.puter.com/v2/"></script>
     <script>
-        const btn = document.getElementById('sendBtn');
+        const = document.getElementById('sendBtn');
         const clearBtn = document.getElementById('clearBtn');
         const chatHistory = document.getElementById('chatHistory');
         const statusDiv = document.getElementById('status');
         const promptInput = document.getElementById('promptInput');
         const modelSelect = document.getElementById('modelSelect');
-        
-        let isInitialized = false;
 
-        function unlockInterface(success) {
-            if (success) {
-                statusDiv.innerHTML = '✅ <strong>Puter Engine Active!</strong> - AI API Ready (Claude, OpenAI, Google & 30+ Models)';
+        // ✅ FIXED: No auth needed! Puter handles it automatically
+        // Interface is ready immediately when Puter.js loads
+        window.addEventListener('load', () => {
+            promptInput.focus();
+            // Check if Puter loaded successfully
+            if (typeof puter !== 'undefined' && puter.ai) {
+                statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI, Google & More)';
                 statusDiv.className = 'status-success';
             } else {
-                statusDiv.innerHTML = '⚠️ <strong>Local Mode</strong> - Trying anyway...';
+                statusDiv.innerHTML = '⏳ <strong>Loading Puter...</strong> - Please wait...';
                 statusDiv.className = 'status-warning';
+                // Retry after 2 seconds
+                setTimeout(() => {
+                    if (typeof puter !== 'undefined' && puter.ai) {
+                        statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI, Google & More)';
+                        statusDiv.className = 'status-success';
+                    } else {
+                        statusDiv.innerHTML = '⚠️ <strong>Puter not loaded</strong> - Make sure you are on GitHub Pages or a web server (not local file)';
+                    }
+                }, 2000);
             }
-            btn.disabled = false;
-            clearBtn.style.display = 'block';
-            isInitialized = true;
-        }
-
-        if (typeof puter !== 'undefined' && puter.auth) {
-            puter.auth.signIn({ attempt_temp_user_creation: true })
-                .then(() => unlockInterface(true))
-                .catch(() => unlockInterface(false));
-        }
-
-        setTimeout(() => {
-            if (btn.disabled && btn.innerText === 'Connecting...') unlockInterface(false);
-        }, 2500);
+        });
 
         promptInput.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btn.disabled) sendMessage();
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sendMessage();
         });
 
         btn.addEventListener('click', sendMessage);
@@ -216,6 +214,12 @@
             const prompt = promptInput.value.trim();
             const selectedModel = modelSelect.value;
             if (!prompt) return alert('Please type a message first!');
+
+            // Check if Puter is available
+            if (typeof puter === 'undefined' || !puter.ai) {
+                alert('❌ Puter is not loaded! Please reload the page or check your internet connection.');
+                return;
+            }
 
             addMessage(prompt, true);
             promptInput.value = '';
@@ -262,10 +266,6 @@
                 promptInput.focus();
             }
         }
-
-        window.addEventListener('load', () => {
-            promptInput.focus();
-        });
     </script>
 </body>
 </html>
