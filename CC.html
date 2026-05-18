@@ -90,7 +90,7 @@
 
     <div class="chat-container">
         <label for="modelSelect">Choose a Model:</label>
-        <span class="model-info">💡 Tip: Claude Opus 4.7 Fast and GPT-5.5 work best!</span>
+        <span class="model-info">💡 Tip: Claude Opus 4.7 Fast and GPT-4o work best!</span>
         <select id="modelSelect">
             <!-- 🔵 CLAUDE MODELS -->
             <optgroup label="Claude (Anthropic)">
@@ -102,19 +102,8 @@
                 <option value="claude-opus-4-6">Claude Opus 4.6</option>
             </optgroup>
             
-            <!-- 🟢 OPENAI GPT-5 SERIES -->
-            <optgroup label="OpenAI GPT-5 (Latest)">
-                <option value="openai/gpt-5.5">GPT-5.5 ⭐ Frontier</option>
-                <option value="openai/gpt-5.5-pro">GPT-5.5 Pro</option>
-                <option value="openai/gpt-5.5-chat">GPT-5 Chat (Latest)</option>
-                <option value="openai/gpt-5.4">GPT-5.4</option>
-                <option value="openai/gpt-5.4-mini">GPT-5.4 Mini</option>
-                <option value="openai/gpt-5-mini">GPT-5 Mini</option>
-                <option value="openai/gpt-5.4-nano">GPT-5.4 Nano (Fastest)</option>
-            </optgroup>
-            
-            <!-- 🟢 OPENAI GPT-4 SERIES -->
-            <optgroup label="OpenAI GPT-4 (Stable)">
+            <!-- 🟢 OPENAI MODELS (Working) -->
+            <optgroup label="OpenAI (Working)">
                 <option value="gpt-4o">GPT-4o ⭐ Recommended</option>
                 <option value="gpt-4o-mini">GPT-4o Mini</option>
                 <option value="gpt-4.1">GPT-4.1</option>
@@ -153,8 +142,8 @@
         <label for="promptInput">Your Message:</label>
         <textarea id="promptInput" placeholder="Type your message... (Ctrl/Cmd+Enter to send)"></textarea>
 
-        <button id="sendBtn">🚀 Send Message</button>
-        <button id="clearBtn" style="background-color: #dc3545;">Clear Chat</button>
+        <button id="sendBtn" disabled>Connecting...</button>
+        <button id="clearBtn" style="background-color: #dc3545; display: none;">Clear Chat</button>
     </div>
 
     <div class="chat-container">
@@ -175,17 +164,31 @@
         const statusDiv = document.getElementById('status');
         const promptInput = document.getElementById('promptInput');
         const modelSelect = document.getElementById('modelSelect');
+        
+        let isInitialized = false;
 
-        // ✅ FIXED: Unlock immediately without waiting for auth
-        function unlockInterface() {
-            statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI GPT-5, Google & More)';
-            statusDiv.className = 'status-success';
+        function unlockInterface(success) {
+            if (success) {
+                statusDiv.innerHTML = '✅ <strong>Puter Engine Active!</strong> - AI API Ready (Claude, OpenAI, Google & 30+ Models)';
+                statusDiv.className = 'status-success';
+            } else {
+                statusDiv.innerHTML = '⚠️ <strong>Local Mode</strong> - Trying anyway...';
+                statusDiv.className = 'status-warning';
+            }
             btn.disabled = false;
             clearBtn.style.display = 'block';
+            isInitialized = true;
         }
 
-        // Unlock immediately on page load
-        unlockInterface();
+        if (typeof puter !== 'undefined' && puter.auth) {
+            puter.auth.signIn({ attempt_temp_user_creation: true })
+                .then(() => unlockInterface(true))
+                .catch(() => unlockInterface(false));
+        }
+
+        setTimeout(() => {
+            if (btn.disabled && btn.innerText === 'Connecting...') unlockInterface(false);
+        }, 2500);
 
         promptInput.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btn.disabled) sendMessage();
@@ -251,7 +254,7 @@
                 console.error('Chat error:', error);
                 responseDiv.textContent = '❌ Error: ' + (error.message || error.toString()) + '
 
-💡 Try Claude Opus 4.7 Fast or GPT-5.5 - they work best!';
+💡 Try Claude Opus 4.7 Fast or GPT-4o - they work best!';
             } finally {
                 promptInput.disabled = false;
                 btn.innerText = '🚀 Send Message';
