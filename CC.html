@@ -86,11 +86,11 @@
 <body>
 
     <h2>🤖 My Personal AI Chat</h2>
-    <div id="status">✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI, Google & More)</div>
+    <div id="status">⏳ Initializing Connection...</div>
 
     <div class="chat-container">
         <label for="modelSelect">Choose a Model:</label>
-        <span class="model-info">💡 Tip: Claude Opus 4.7 Fast and GPT-4o work best!</span>
+        <span class="model-info">💡 Tip: Claude Opus 4.7 Fast and GPT-5.5 work best!</span>
         <select id="modelSelect">
             <!-- 🔵 CLAUDE MODELS -->
             <optgroup label="Claude (Anthropic)">
@@ -102,8 +102,19 @@
                 <option value="claude-opus-4-6">Claude Opus 4.6</option>
             </optgroup>
             
-            <!-- 🟢 OPENAI MODELS (Working) -->
-            <optgroup label="OpenAI (Working)">
+            <!-- 🟢 OPENAI GPT-5 SERIES -->
+            <optgroup label="OpenAI GPT-5 (Latest)">
+                <option value="openai/gpt-5.5">GPT-5.5 ⭐ Frontier</option>
+                <option value="openai/gpt-5.5-pro">GPT-5.5 Pro</option>
+                <option value="openai/gpt-5.5-chat">GPT-5 Chat (Latest)</option>
+                <option value="openai/gpt-5.4">GPT-5.4</option>
+                <option value="openai/gpt-5.4-mini">GPT-5.4 Mini</option>
+                <option value="openai/gpt-5-mini">GPT-5 Mini</option>
+                <option value="openai/gpt-5.4-nano">GPT-5.4 Nano (Fastest)</option>
+            </optgroup>
+            
+            <!-- 🟢 OPENAI GPT-4 SERIES -->
+            <optgroup label="OpenAI GPT-4 (Stable)">
                 <option value="gpt-4o">GPT-4o ⭐ Recommended</option>
                 <option value="gpt-4o-mini">GPT-4o Mini</option>
                 <option value="gpt-4.1">GPT-4.1</option>
@@ -158,38 +169,26 @@
 
     <script src="https://js.puter.com/v2/"></script>
     <script>
-        const = document.getElementById('sendBtn');
+        const btn = document.getElementById('sendBtn');
         const clearBtn = document.getElementById('clearBtn');
         const chatHistory = document.getElementById('chatHistory');
         const statusDiv = document.getElementById('status');
         const promptInput = document.getElementById('promptInput');
         const modelSelect = document.getElementById('modelSelect');
 
-        // ✅ FIXED: No auth needed! Puter handles it automatically
-        // Interface is ready immediately when Puter.js loads
-        window.addEventListener('load', () => {
-            promptInput.focus();
-            // Check if Puter loaded successfully
-            if (typeof puter !== 'undefined' && puter.ai) {
-                statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI, Google & More)';
-                statusDiv.className = 'status-success';
-            } else {
-                statusDiv.innerHTML = '⏳ <strong>Loading Puter...</strong> - Please wait...';
-                statusDiv.className = 'status-warning';
-                // Retry after 2 seconds
-                setTimeout(() => {
-                    if (typeof puter !== 'undefined' && puter.ai) {
-                        statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI, Google & More)';
-                        statusDiv.className = 'status-success';
-                    } else {
-                        statusDiv.innerHTML = '⚠️ <strong>Puter not loaded</strong> - Make sure you are on GitHub Pages or a web server (not local file)';
-                    }
-                }, 2000);
-            }
-        });
+        // ✅ FIXED: Unlock immediately without waiting for auth
+        function unlockInterface() {
+            statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI GPT-5, Google & More)';
+            statusDiv.className = 'status-success';
+            btn.disabled = false;
+            clearBtn.style.display = 'block';
+        }
+
+        // Unlock immediately on page load
+        unlockInterface();
 
         promptInput.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') sendMessage();
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btn.disabled) sendMessage();
         });
 
         btn.addEventListener('click', sendMessage);
@@ -214,12 +213,6 @@
             const prompt = promptInput.value.trim();
             const selectedModel = modelSelect.value;
             if (!prompt) return alert('Please type a message first!');
-
-            // Check if Puter is available
-            if (typeof puter === 'undefined' || !puter.ai) {
-                alert('❌ Puter is not loaded! Please reload the page or check your internet connection.');
-                return;
-            }
 
             addMessage(prompt, true);
             promptInput.value = '';
@@ -258,7 +251,7 @@
                 console.error('Chat error:', error);
                 responseDiv.textContent = '❌ Error: ' + (error.message || error.toString()) + '
 
-💡 Try Claude Opus 4.7 Fast or GPT-4o - they work best!';
+💡 Try Claude Opus 4.7 Fast or GPT-5.5 - they work best!';
             } finally {
                 promptInput.disabled = false;
                 btn.innerText = '🚀 Send Message';
@@ -266,6 +259,10 @@
                 promptInput.focus();
             }
         }
+
+        window.addEventListener('load', () => {
+            promptInput.focus();
+        });
     </script>
 </body>
 </html>
