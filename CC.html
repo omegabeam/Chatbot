@@ -90,52 +90,64 @@
 
     <div class="chat-container">
         <label for="modelSelect">Choose a Model:</label>
-        <span class="model-info">✅ Claude Opus 4.7 Fast works best! OpenAI models also very reliable.</span>
+        <span class="model-info">💡 Tip: Claude Opus 4.7 and GPT-4o are most reliable. Gemini 3 Flash is free!</span>
         <select id="modelSelect">
             <!-- 🔵 CLAUDE MODELS -->
             <optgroup label="Claude (Anthropic)">
-                <option value="claude-opus-4.7-fast" selected>Claude Opus 4.7 Fast ⭐ WORKS BEST</option>
-                <option value="claude-opus-4-7">Claude Opus 4.7 (Most Powerful)</option>
-                <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
-                <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
-                <option value="claude-haiku-4-5">Claude Haiku 4.5 (Fastest)</option>
-                <option value="claude-opus-4-6">Claude Opus 4.6</option>
+                <option value="claude-opus-4-7" selected>Claude Opus 4.7 (Most Powerful)</option>
+                <option value="claude-opus-4.7-fast">Claude Opus 4.7 Fast (2.5x Faster)</option>
+                <option value="anthropic/claude-sonnet-4-6">Claude Sonnet 4.6</option>
+                <option value="anthropic/claude-opus-4-6">Claude Opus 4.6</option>
+                <option value="anthropic/claude-haiku-4-5">Claude Haiku 4.5 (Fastest)</option>
+                <option value="anthropic/claude-sonnet-4-5">Claude Sonnet 4.5</option>
             </optgroup>
             
-            <!-- 🟢 OPENAI MODELS (Working) -->
-            <optgroup label="OpenAI (Working)">
-                <option value="gpt-4o">GPT-4o ⭐ Recommended</option>
-                <option value="gpt-4o-mini">GPT-4o Mini</option>
-                <option value="gpt-4.1">GPT-4.1</option>
-                <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
-                <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
+            <!-- 🟢 OPENAI MODELS -->
+            <optgroup label="OpenAI">
+                <option value="openai/gpt-5.5">GPT-5.5 (Frontier)</option>
+                <option value="openai/gpt-5.5-pro">GPT-5.5 Pro</option>
+                <option value="openai/gpt-5.5-chat">GPT-5 Chat (Latest)</option>
+                <option value="openai/gpt-5.4">GPT-5.4</option>
+                <option value="openai/gpt-5.4-mini">GPT-5.4 Mini</option>
+                <option value="openai/gpt-5-mini">GPT-5 Mini</option>
+                <option value="openai/gpt-5.4-nano">GPT-5.4 Nano (Fastest)</option>
+                <option value="openai/gpt-4o">GPT-4o (Recommended)</option>
+                <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
             </optgroup>
             
-            <!-- 🟡 GOOGLE MODELS (Working) -->
-            <optgroup label="Google (Working)">
-                <option value="gemini-2.5-flash-preview">Gemini 2.5 Flash ⭐ Free</option>
-                <option value="gemini-2.5-pro-preview">Gemini 2.5 Pro</option>
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                <option value="gemini-2.0-flash-lite-preview-02-05">Gemini 2.0 Flash Lite</option>
+            <!-- 🟡 GOOGLE MODELS (Fixed names) -->
+            <optgroup label="Google">
+                <option value="gemini-3-flash-preview">Gemini 3 Flash (Best Free)</option>
+                <option value="google/gemini-3-pro-preview">Gemini 3 Pro (Most Intelligent)</option>
+                <option value="google/gemini-3.1-pro-preview">Gemini 3.1 Pro (Advanced)</option>
+                <option value="google/gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite (Fastest)</option>
+                <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+                <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+                <option value="google/gemma-4-31b-it">Gemma 4 31B (Open)</option>
+                <option value="google/gemma-4-26b-a4b-it">Gemma 4 26B A4B</option>
             </optgroup>
             
             <!-- 🟢 FREE MODELS -->
             <optgroup label="FREE Models">
                 <option value="inclusionai/ring-2.6-1t:free">Ring 2.6 1T (FREE - Trillion)</option>
-                <option value="qwen/qwen3.6-plus-preview:free">Qwen 3.6 Plus Preview (FREE)</option>
+                <option value="qwen/qwen3.6-plus-preview:free">Qwen 3.6 Plus (FREE)</option>
                 <option value="poolside/laguna-m.1:free">Laguna M.1 (FREE - Coding)</option>
                 <option value="poolside/laguna-xs.2:free">Laguna XS.2 (FREE - Light)</option>
+                <option value="baidu/cobuddy:free">CoBuddy (FREE - Baidu)</option>
                 <option value="google/gemma-3n-e2b-it:free">Gemma 3n 2B (FREE - Mobile)</option>
+                <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">Nemotron 3 Nano (FREE)</option>
             </optgroup>
             
-            <!-- 🟣 OTHER MODELS (Working) -->
-            <optgroup label="Other Working Models">
-                <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
-                <option value="deepseek/deepseek-coder">DeepSeek Coder</option>
-                <option value="qwen/qwen-plus">Qwen Plus</option>
-                <option value="qwen/qwen-flash">Qwen Flash</option>
-                <option value="mistralai/mistral-medium-3.5">Mistral Medium 3.5</option>
-                <option value="moonshotai/kimi-k2">Kimi K2</option>
+            <!-- 🟣 OTHER POPULAR -->
+            <optgroup label="Other Models">
+                <option value="deepseek/deepseek-v4-pro">DeepSeek V4 Pro</option>
+                <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash</option>
+                <option value="qwen/qwen3.6-plus">Qwen 3.6 Plus</option>
+                <option value="qwen/qwen3.6-flash">Qwen 3.6 Flash</option>
+                <option value="mistralai/mistral-medium-3-5">Mistral Medium 3.5</option>
+                <option value="x-ai/grok-4.3">Grok 4.3 (xAI)</option>
+                <option value="x-ai/grok-4.20">Grok 4.20 (Accurate)</option>
+                <option value="moonshotai/kimi-k2.6">Kimi K2.6 (1T Params)</option>
             </optgroup>
         </select>
 
@@ -169,7 +181,7 @@
 
         function unlockInterface(success) {
             if (success) {
-                statusDiv.innerHTML = '✅ <strong>Puter Engine Active!</strong> - AI API Ready (Claude, OpenAI, Google & More)';
+                statusDiv.innerHTML = '✅ <strong>Puter Engine Active!</strong> - AI API Ready (Claude, OpenAI, Google & 30+ Models)';
                 statusDiv.className = 'status-success';
             } else {
                 statusDiv.innerHTML = '⚠️ <strong>Local Mode</strong> - Trying anyway...';
@@ -233,37 +245,22 @@
             try {
                 const response = await puter.ai.chat(prompt, { model: selectedModel });
                 
-                // ✅ FIXED: Handle ChatResponse object properly
-                // All Claude models return: response.message.content[0].text
-                // OpenAI/Google return: response directly OR response.message.content
-                let text = '';
-                
+                // Handle both string and ChatResponse object formats
+                let text;
                 if (typeof response === 'string') {
                     text = response;
                 } else if (response?.message?.content) {
-                    // ChatResponse object format - extract text from array
-                    if (Array.isArray(response.message.content)) {
-                        text = response.message.content[0]?.text || 
-                               response.message.content[0]?.content || 
-                               JSON.stringify(response.message.content[0]);
-                    } else {
-                        text = response.message.content;
-                    }
-                } else if (response?.choices?.[0]?.message?.content) {
-                    // OpenAI-style format
-                    text = response.choices[0].message.content;
+                    text = response.message.content;
                 } else {
                     text = JSON.stringify(response, null, 2);
                 }
-                
                 responseDiv.textContent = text;
                 
             } catch (error) {
                 console.error('Chat error:', error);
-                const errorMsg = error.message || error.toString();
-                responseDiv.textContent = '❌ Error: ' + errorMsg + '
+                responseDiv.textContent = '❌ Error: ' + (error.message || error.toString()) + '
 
-💡 Try Claude Opus 4.7 Fast or GPT-4o - they work best!';
+💡 Try a different model. Some models may have temporary issues.';
             } finally {
                 promptInput.disabled = false;
                 btn.innerText = '🚀 Send Message';
