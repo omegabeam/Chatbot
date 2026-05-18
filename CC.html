@@ -90,7 +90,7 @@
 
     <div class="chat-container">
         <label for="modelSelect">Choose a Model:</label>
-        <span class="model-info">💡 Tip: Claude Opus 4.7 Fast and GPT-4o work best!</span>
+        <span class="model-info">💡 Tip: Claude Opus 4.7 Fast and GPT-5.5 work best!</span>
         <select id="modelSelect">
             <!-- 🔵 CLAUDE MODELS -->
             <optgroup label="Claude (Anthropic)">
@@ -102,8 +102,19 @@
                 <option value="claude-opus-4-6">Claude Opus 4.6</option>
             </optgroup>
             
-            <!-- 🟢 OPENAI MODELS (Working) -->
-            <optgroup label="OpenAI (Working)">
+            <!-- 🟢 OPENAI GPT-5 SERIES -->
+            <optgroup label="OpenAI GPT-5 (Latest)">
+                <option value="openai/gpt-5.5">GPT-5.5 ⭐ Frontier</option>
+                <option value="openai/gpt-5.5-pro">GPT-5.5 Pro</option>
+                <option value="openai/gpt-5.5-chat">GPT-5 Chat (Latest)</option>
+                <option value="openai/gpt-5.4">GPT-5.4</option>
+                <option value="openai/gpt-5.4-mini">GPT-5.4 Mini</option>
+                <option value="openai/gpt-5-mini">GPT-5 Mini</option>
+                <option value="openai/gpt-5.4-nano">GPT-5.4 Nano (Fastest)</option>
+            </optgroup>
+            
+            <!-- 🟢 OPENAI GPT-4 SERIES -->
+            <optgroup label="OpenAI GPT-4 (Stable)">
                 <option value="gpt-4o">GPT-4o ⭐ Recommended</option>
                 <option value="gpt-4o-mini">GPT-4o Mini</option>
                 <option value="gpt-4.1">GPT-4.1</option>
@@ -142,8 +153,8 @@
         <label for="promptInput">Your Message:</label>
         <textarea id="promptInput" placeholder="Type your message... (Ctrl/Cmd+Enter to send)"></textarea>
 
-        <button id="sendBtn" disabled>Connecting...</button>
-        <button id="clearBtn" style="background-color: #dc3545; display: none;">Clear Chat</button>
+        <button id="sendBtn">🚀 Send Message</button>
+        <button id="clearBtn" style="background-color: #dc3545;">Clear Chat</button>
     </div>
 
     <div class="chat-container">
@@ -164,31 +175,33 @@
         const statusDiv = document.getElementById('status');
         const promptInput = document.getElementById('promptInput');
         const modelSelect = document.getElementById('modelSelect');
-        
-        let isInitialized = false;
 
-        function unlockInterface(success) {
-            if (success) {
-                statusDiv.innerHTML = '✅ <strong>Puter Engine Active!</strong> - AI API Ready (Claude, OpenAI, Google & 30+ Models)';
+        // Check if Puter loaded
+        function checkPuterLoaded() {
+            if (typeof puter !== 'undefined' && puter.ai) {
+                statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI GPT-5, Google & More)';
                 statusDiv.className = 'status-success';
-            } else {
-                statusDiv.innerHTML = '⚠️ <strong>Local Mode</strong> - Trying anyway...';
-                statusDiv.className = 'status-warning';
+                return true;
             }
+            return false;
+        }
+
+        // Unlock immediately on page load
+        unlockInterface();
+
+        function unlockInterface() {
+            // Check if Puter is already loaded
+            if (checkPuterLoaded()) return;
+            
+            // Otherwise show ready status (Puter will load asynchronously)
+            statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loading...';
+            statusDiv.className = 'status-success';
             btn.disabled = false;
             clearBtn.style.display = 'block';
-            isInitialized = true;
+            
+            // Check again after 2 seconds
+            setTimeout(checkPuterLoaded, 2000);
         }
-
-        if (typeof puter !== 'undefined' && puter.auth) {
-            puter.auth.signIn({ attempt_temp_user_creation: true })
-                .then(() => unlockInterface(true))
-                .catch(() => unlockInterface(false));
-        }
-
-        setTimeout(() => {
-            if (btn.disabled && btn.innerText === 'Connecting...') unlockInterface(false);
-        }, 2500);
 
         promptInput.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btn.disabled) sendMessage();
@@ -207,7 +220,7 @@
             }
             const div = document.createElement('div');
             div.className = 'message ' + (isUser ? 'user-message' : 'ai-message');
-            div.innerHTML = `<div class="message-label">${isUser ? '👤 You' : '🤖 AI'}</div><div class="response">${text}</div>`;
+            div.innerHTML = '<div class="message-label">' + (isUser ? '👤 You' : '🤖 AI') + '</div><div class="response">' + text + '</div>';
             chatHistory.appendChild(div);
             chatHistory.scrollTop = chatHistory.scrollHeight;
         }
@@ -216,6 +229,12 @@
             const prompt = promptInput.value.trim();
             const selectedModel = modelSelect.value;
             if (!prompt) return alert('Please type a message first!');
+
+            // Check if Puter is loaded
+            if (typeof puter === 'undefined' || !puter.ai) {
+                alert('❌ Puter.ai is still loading... Please wait a moment and try again.');
+                return;
+            }
 
             addMessage(prompt, true);
             promptInput.value = '';
@@ -237,11 +256,13 @@
                 let text;
                 if (typeof response === 'string') {
                     text = response;
-                } else if (response?.message?.content) {
+                } else if (response && response.message && response.message.content) {
                     if (Array.isArray(response.message.content)) {
-                        text = response.message.content[0]?.text || 
-                               response.message.content[0]?.content || 
-                               JSON.stringify(response.message.content[0]);
+                        text = response.message.content[0] && response.message.content[0].text 
+                            ? response.message.content[0].text 
+                            : (response.message.content[0] && response.message.content[0].content 
+                                ? response.message.content[0].content 
+                                : JSON.stringify(response.message.content[0]));
                     } else {
                         text = response.message.content;
                     }
@@ -252,9 +273,10 @@
                 
             } catch (error) {
                 console.error('Chat error:', error);
-                responseDiv.textContent = '❌ Error: ' + (error.message || error.toString()) + '
+                const errorMsg = error.message || error.toString() || 'Unknown error';
+                responseDiv.textContent = '❌ Error: ' + errorMsg + '
 
-💡 Try Claude Opus 4.7 Fast or GPT-4o - they work best!';
+💡 Try Claude Opus 4.7 Fast or GPT-5.5 - they work best!';
             } finally {
                 promptInput.disabled = false;
                 btn.innerText = '🚀 Send Message';
