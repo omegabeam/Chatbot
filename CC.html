@@ -122,7 +122,7 @@
                 <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
             </optgroup>
             
-            <!-- 🟡 GOOGLE MODELS (Working) -->
+            <!-- 🟡 GOOGLE MODELS -->
             <optgroup label="Google (Working)">
                 <option value="gemini-2.5-flash-preview">Gemini 2.5 Flash ⭐ Free</option>
                 <option value="gemini-2.5-pro-preview">Gemini 2.5 Pro</option>
@@ -153,8 +153,8 @@
         <label for="promptInput">Your Message:</label>
         <textarea id="promptInput" placeholder="Type your message... (Ctrl/Cmd+Enter to send)"></textarea>
 
-        <button id="sendBtn">🚀 Send Message</button>
-        <button id="clearBtn" style="background-color: #dc3545;">Clear Chat</button>
+        <button id="sendBtn" disabled>Connecting...</button>
+        <button id="clearBtn" style="background-color: #dc3545; display: none;">Clear Chat</button>
     </div>
 
     <div class="chat-container">
@@ -167,41 +167,82 @@
         </div>
     </div>
 
+    <button id="loginBtn" style="display: none; margin-top: 20px; background-color: #28a745;">🔐 Login to Puter</button>
+
     <script src="https://js.puter.com/v2/"></script>
     <script>
         const btn = document.getElementById('sendBtn');
         const clearBtn = document.getElementById('clearBtn');
+        const loginBtn = document.getElementById('loginBtn');
         const chatHistory = document.getElementById('chatHistory');
         const statusDiv = document.getElementById('status');
         const promptInput = document.getElementById('promptInput');
         const modelSelect = document.getElementById('modelSelect');
 
-        // Check if Puter loaded
-        function checkPuterLoaded() {
-            if (typeof puter !== 'undefined' && puter.ai) {
-                statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loaded (Claude, OpenAI GPT-5, Google & More)';
-                statusDiv.className = 'status-success';
-                return true;
+        let isAuthenticated = false;
+
+        // ✅ FIXED: Try to auto-login on page load
+        async function tryAutoLogin() {
+            if (typeof puter === 'undefined' || !puter.auth) {
+                console.log('Puter not loaded yet, waiting...');
+                setTimeout(tryAutoLogin, 1000);
+                return;
             }
-            return false;
+
+            try {
+                console.log('Attempting auto-login...');
+                await puter.auth.signIn({ attempt_temp_user_creation: true });
+                console.log('Auto-login successful!');
+                onLoginSuccess();
+            } catch (error) {
+                console.log('Auto-login failed, showing login button:', error);
+                showLoginButton();
+            }
         }
 
-        // Unlock immediately on page load
-        unlockInterface();
-
-        function unlockInterface() {
-            // Check if Puter is already loaded
-            if (checkPuterLoaded()) return;
-            
-            // Otherwise show ready status (Puter will load asynchronously)
-            statusDiv.innerHTML = '✅ <strong>Ready!</strong> - Puter.ai API Loading...';
+        function onLoginSuccess() {
+            isAuthenticated = true;
+            statusDiv.innerHTML = '✅ <strong>Puter Engine Active!</strong> - AI API Ready (Claude, OpenAI GPT-5, Google & More)';
             statusDiv.className = 'status-success';
             btn.disabled = false;
             clearBtn.style.display = 'block';
-            
-            // Check again after 2 seconds
-            setTimeout(checkPuterLoaded, 2000);
+            loginBtn.style.display = 'none';
+            console.log('Interface unlocked!');
         }
+
+        function showLoginButton() {
+            statusDiv.innerHTML = '⚠️ <strong>Please Login</strong> - Click the button below to authenticate with Puter';
+            statusDiv.className = 'status-warning';
+            loginBtn.style.display = 'block';
+            btn.disabled = true;
+        }
+
+        // Login button click handler
+        loginBtn.addEventListener('click', async () => {
+            loginBtn.disabled = true;
+            loginBtn.innerText = '⏳ Opening login popup...';
+            
+            try {
+                await puter.auth.signIn({ attempt_temp_user_creation: true });
+                onLoginSuccess();
+            } catch (error) {
+                console.error('Login failed:', error);
+                loginBtn.disabled = false;
+                loginBtn.innerText = '🔐 Login to Puter (Try Again)';
+                alert('Login failed. Please allow popups for this site and try again.');
+            }
+        });
+
+        // Start auto-login on page load
+        tryAutoLogin();
+
+        // Fallback: unlock after 5 seconds even if auth fails
+        setTimeout(() => {
+            if (!isAuthenticated && btn.disabled) {
+                console.log('Timeout reached, showing login button');
+                showLoginButton();
+            }
+        }, 5000);
 
         promptInput.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !btn.disabled) sendMessage();
@@ -229,12 +270,7 @@
             const prompt = promptInput.value.trim();
             const selectedModel = modelSelect.value;
             if (!prompt) return alert('Please type a message first!');
-
-            // Check if Puter is loaded
-            if (typeof puter === 'undefined' || !puter.ai) {
-                alert('❌ Puter.ai is still loading... Please wait a moment and try again.');
-                return;
-            }
+            if (!isAuthenticated) return alert('Please login to Puter first!');
 
             addMessage(prompt, true);
             promptInput.value = '';
@@ -252,7 +288,6 @@
             try {
                 const response = await puter.ai.chat(prompt, { model: selectedModel });
                 
-                // Extract text from ChatResponse object (fixes [object Object])
                 let text;
                 if (typeof response === 'string') {
                     text = response;
